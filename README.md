@@ -1,16 +1,50 @@
-# React + Vite
+# Sneaker Drop Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite dashboard for the limited-edition sneaker drop system.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Start the backend first in `C:\Users\azmai\OneDrive\Desktop\live codeing\techzu-task\sneaker-drop`
+   - `npx prisma migrate deploy`
+   - `npx prisma generate`
+   - `node server.js`
+2. Start the frontend in this project
+   - `npm install`
+   - `npm run dev`
+3. Open `http://localhost:5173`
 
-## React Compiler
+## Environment
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Optional: create a `.env` file with `VITE_API_BASE_URL=http://localhost:3000`
+- If not provided, the app already falls back to `http://localhost:3000`
 
-## Expanding the ESLint configuration
+## What the UI does
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Loads active drops from `GET /api/drops`
+- Subscribes to `drops:snapshot`, `drop:created`, and `drop:update`
+- Lets a shopper reserve stock for 60 seconds
+- Lets a shopper complete purchase only from an active reservation
+- Shows the latest 3 successful purchasers on each drop card
+
+## Demo steps
+
+1. Open two browser windows to `http://localhost:5173`
+2. Enter a different username in each window
+3. Create a drop from the backend API or Postman
+4. Reserve an item in window 1 and watch stock update instantly in window 2
+5. Complete the purchase in window 1 and confirm the purchaser feed updates in both windows
+6. Reserve again in window 2, do not purchase, and wait 60 seconds
+7. Confirm stock is automatically restored in both windows after expiration
+
+## Useful API payload
+
+Create a drop:
+
+```json
+{
+  "name": "Air Jordan 1",
+  "price": 250,
+  "totalStock": 100,
+  "startsAt": "2026-05-06T12:00:00.000Z"
+}
+```
