@@ -1,69 +1,60 @@
-import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
-
-// Connect to the backend Socket.io server
-const socket = io('http://localhost:3000');
+import './App.css';
+import { DashboardHeader } from './components/DashboardHeader';
+import { DropCard } from './components/DropCard';
+import { EmptyState } from './components/EmptyState';
+import { NotificationToast } from './components/NotificationToast';
+import { useDropDashboard } from './hooks/useDropDashboard';
 
 function App() {
-  const [items, setItems] = useState([]);
-
-  useEffect(() => {
-    // Fetch items from the backend
-    fetch('/items')
-      .then(res => res.json())
-      .then(data => setItems(data));
-
-    // Listen for real-time stock updates from the backend
-    socket.on('itemReserved', (data) => {
-      // Handle item reservation update (e.g., update stock or show notification)
-      alert(`Item ${data.itemId} reserved by user ${data.userId}`);
-      // Optionally, refresh the items state to reflect stock updates
-      fetch('/items')
-        .then(res => res.json())
-        .then(data => setItems(data));
-    });
-
-    socket.on('stockRestored', (data) => {
-      // Handle stock restoration (reservation expiration)
-      alert(`Stock for item ${data.itemId} has been restored.`);
-      fetch('/items')
-        .then(res => res.json())
-        .then(data => setItems(data));
-    });
-
-    return () => {
-      socket.off('itemReserved');
-      socket.off('stockRestored');
-    };
-  }, []);
+  const {
+    activeReservationCount,
+    countdownTick,
+    drops,
+    loadingDrops,
+    notification,
+    reserveDrop,
+    reservations,
+    purchaseDrop,
+    setUsernameInput,
+    socketConnected,
+    submittingByDrop,
+    usernameInput,
+  } = useDropDashboard();
 
   return (
-    <div>
-      <h1>Sneaker Drop</h1>
-      <ul>
-        {items.map(item => (
-          <li key={item.id}>
-            {item.name} - ${item.price} - Stock: {item.stock}
-            {/* Add reserve button */}
-            <button onClick={() => reserveItem(item.id)}>Reserve</button>
-          </li>
-        ))}
-      </ul>
+    <div className="app-shell">
+      <DashboardHeader
+        activeReservationCount={activeReservationCount}
+        socketConnected={socketConnected}
+        usernameInput={usernameInput}
+        setUsernameInput={setUsernameInput}
+      />
+
+      <NotificationToast notification={notification} />
+
+      <main>
+        {loadingDrops ? <EmptyState>Loading active drops...</EmptyState> : null}
+
+        {!loadingDrops && drops.length === 0 ? (
+          <EmptyState>No active merch drops yet. Create one from the backend and it will appear live here.</EmptyState>
+        ) : null}
+
+        <section className="drop-grid">
+          {drops.map((drop) => (
+            <DropCard
+              key={drop.id}
+              countdownTick={countdownTick}
+              drop={drop}
+              purchaseDrop={purchaseDrop}
+              reservation={reservations[drop.id]}
+              reserveDrop={reserveDrop}
+              submittingState={submittingByDrop[drop.id]}
+            />
+          ))}
+        </section>
+      </main>
     </div>
   );
-
-  // Function to call the backend to reserve an item
-  function reserveItem(itemId) {
-    const userId = 'user123'; // Example user ID
-    fetch('/reserve', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ itemId, userId }),
-    })
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error('Error reserving item:', error));
-  }
 }
 
 export default App;
