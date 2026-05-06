@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://sneaker-drop-backend-db.vercel.app').replace(/\/$/, '');
 
 export const dropSocket = io(API_BASE_URL, {
   autoConnect: false,
